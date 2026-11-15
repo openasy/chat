@@ -1,0 +1,96 @@
+# Chat: the pages and API (this repository) next to Synapse, the Matrix server that stores every message and file and
+# serves Element on phones and computers, and PostgreSQL for Synapse. See the README for the first start.
+#
+#   openssl rand -hex 32 > openasy-kek                                    # the sign-in secrets key (ADR 0021)
+#   printf '%s' "$(openssl rand -hex 32)" > synapse-registration-secret   # Chat makes its Synapse account with it
+#   printf '%s' "$(openssl rand -hex 24)" > synapse-postgres-password
+#   printf '%s' "<the client secret of Synapse in Identity>" > synapse-oidc-secret
+#   $EDITOR config/synapse/homeserver.yaml config/chat.yaml
+#   docker compose run --rm synapse generate-keys
+#   docker compose up -d
+#   docker compose logs chat | grep 'no owner yet'   # the one-time link that creates the owner account
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data # every message: keep it in your backups
+    secrets: [synapse-postgres-password]
+    environment:
+      POSTGRES_USER: synapse
+      POSTGRES_DB: synapse
+      POSTGRES_PASSWORD_FILE: /run/secrets/synapse-postgres-password
+      # Synapse needs the C collation.
+      POSTGRES_INITDB_ARGS: --encoding=UTF-8 --lc-collate=C --lc-ctype=C
+
+  synapse:
+    # Pin the exact version you run; Chat is tested against Synapse 1.165.
+    image: ghcr.io/element-hq/synapse:v1.165.0
+    restart: unless-stopped
+    depends_on: [postgres]
+    # generate-keys makes Synapse's signing key once; otherwise Synapse runs as usual.
+    entrypoint:
+      [
+        "/bin/sh",
+        "-c",
+        'if [ "$$1" = generate-keys ]; then exec python -m synapse.app.homeserver --config-path /config/homeserver.yaml --generate-keys; fi; exec /start.py',
+        "--",
+      ]
+    ports:
+      - "127.0.0.1:8008:8008" # the Matrix client API for Element; put a TLS proxy in front at public_baseurl
+    volumes:
+      - synapse-data:/data # files people share and Synapse's signing key: keep it in your backups
+      - ./config/synapse:/config:ro
+    secrets:
+      - synapse-registration-secret
+      - synapse-postgres-password
+      - synapse-oidc-secret
+    environment:
+      SYNAPSE_CONFIG_PATH: /config/homeserver.yaml
+
+  chat:
+    image: ghcr.io/openasy/chat:0.1.0
+    restart: unless-stopped
+    depends_on: [synapse]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: [/tmp]
+    ports:
+      - "127.0.0.1:8080:8080" # pages and API; put a TLS proxy in front
+    volumes:
+      - chat-data:/data # SQLite database: sign-in, syncs, guests, webhook tokens, holds and export archives; no messages
+      - ./config:/config:ro # chat.yaml; mount the folder so an editor's save reaches it
+    secrets:
+      - openasy-kek # mounted at /run/secrets/openasy-kek
+      - synapse-registration-secret # mounted at /run/secrets/synapse-registration-secret
+    environment:
+      # The address people open Chat at; with a TLS proxy, its https:// URL.
+      CHAT_PUBLIC_URL: ${CHAT_PUBLIC_URL:-http://localhost:8080}
+      # Where Element reaches Synapse: public_baseurl in homeserver.yaml.
+      CHAT_HOMESERVER_URL: ${CHAT_HOMESERVER_URL:-https://matrix.example.com}
+      CHAT_CONFIG: /config/chat.yaml
+      CHAT_SYNAPSE_URL: http://synapse:8008
+      # The company directory from OpenAsy Identity, with an API token that has the viewer role:
+      # CHAT_IDENTITY_URL: https://login.example.com
+      # CHAT_IDENTITY_TOKEN_FILE: /run/secrets/identity-token
+      # Sign in with your identity provider (OIDC), see the README. Everyone in the company signs in as a user:
+      # OPENASY_OIDC_ISSUER: https://login.example.com
+      # OPENASY_OIDC_CLIENT_ID: chat
+      # OPENASY_OIDC_CLIENT_SECRET: ${OPENASY_OIDC_CLIENT_SECRET}
+      # OPENASY_OIDC_DEFAULT_ROLE: user
+
+volumes:
+  postgres-data:
+  synapse-data:
+  chat-data:
+
+secrets:
+  openasy-kek:
+    file: ./openasy-kek
+  synapse-registration-secret:
+    file: ./synapse-registration-secret
+  synapse-postgres-password:
+    file: ./synapse-postgres-password
+  synapse-oidc-secret:
+    file: ./synapse-oidc-secret

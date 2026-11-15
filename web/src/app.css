@@ -1,0 +1,120 @@
+/* The few layouts this product needs that @openasy/ui's prebuilt styles do not include. Colours stay in the library's tokens. */
+
+.chat-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Messages: conversations, the channel, and its thread or details. One column on small screens. */
+.chat-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+.chat-main {
+  height: 620px;
+}
+@media (min-width: 1280px) {
+  .chat-layout {
+    grid-template-columns: 220px minmax(0, 1fr) 320px;
+    height: calc(100dvh - 11rem);
+    min-height: 560px;
+  }
+  .chat-main {
+    height: auto;
+  }
+}
+
+.chat-card {
+  border-inline-start-width: 3px;
+  border-inline-start-color: var(--oa-chart-4);
+}
+
+.chat-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The reply link and the reaction button show on hover and focus, as Element's do. */
+.chat-reply,
+.chat-react > button {
+  opacity: 0;
+}
+li:hover .chat-reply,
+li:focus-within .chat-reply,
+li:hover .chat-react > button,
+li:focus-within .chat-react > button,
+.chat-react:focus-within > button {
+  opacity: 1;
+}
+
+.chat-pop {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 100%;
+  z-index: 20;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+}
+.chat-pop-up {
+  top: auto;
+  bottom: 100%;
+}
+
+.chat-info {
+  grid-template-columns: 96px minmax(0, 1fr);
+  margin: 0;
+}
+.chat-person {
+  grid-template-columns: 84px minmax(0, 1fr);
+  margin: 0;
+}
+.chat-tips {
+  grid-template-columns: 140px minmax(0, 1fr);
+  margin: 0;
+}
+
+.chat-browse {
+  max-height: 16rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-halves,
+.chat-side,
+.chat-side-wide,
+.chat-thirds {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 640px) {
+  .chat-thirds {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1280px) {
+  .chat-halves {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .chat-span2 {
+    grid-column: span 2;
+  }
+  .chat-side {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+  .chat-side-wide {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+.chat-settings-list {
+  grid-template-columns: minmax(120px, 40%) minmax(0, 1fr);
+  margin: 0;
+}
+
+.chat-code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.chat-welcome {
+  max-width: 36rem;
+}

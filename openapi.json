@@ -1,0 +1,4558 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAsy Chat",
+    "version": "0.1.0",
+    "description": "Channels, threads, direct messages, files and search on the company's own Matrix server (Synapse), with channels set in chat.yaml and guests, retention, legal holds and exports. The messages stay on the Matrix server; a person's routes act as that person there. Every member talks; viewers read the channels and the file; admins also set the rules of channels people made, export for legal requests and manage members and tokens.",
+    "license": {
+      "name": "AGPL-3.0-only",
+      "identifier": "AGPL-3.0-only"
+    }
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "session": []
+    },
+    {
+      "apiToken": []
+    },
+    {
+      "adminToken": []
+    }
+  ],
+  "paths": {
+    "/api/v1/version": {
+      "get": {
+        "operationId": "version",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Product and version",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "operationId": "products",
+        "tags": [
+          "Product"
+        ],
+        "summary": "The install's other OpenAsy products",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Products"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "Any member (the user role is enough)."
+      }
+    },
+    "/api/v1/summary": {
+      "get": {
+        "operationId": "summary",
+        "tags": [
+          "Product"
+        ],
+        "summary": "The file, the last sync and the server",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "viewer",
+        "description": "Needs the viewer role."
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "me",
+        "tags": [
+          "Product"
+        ],
+        "summary": "The signed-in person's Matrix account",
+        "description": "Made the first time they open Chat when Identity has not made it yet.\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      }
+    },
+    "/api/v1/config": {
+      "get": {
+        "operationId": "config",
+        "tags": [
+          "File"
+        ],
+        "summary": "The channels, apps and rules of the chat file, as applied",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Config"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "viewer",
+        "description": "Needs the viewer role."
+      }
+    },
+    "/api/v1/sync": {
+      "get": {
+        "operationId": "syncRuns",
+        "tags": [
+          "File"
+        ],
+        "summary": "The last times the server was brought in step with the file",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncRuns"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "viewer",
+        "description": "Needs the viewer role."
+      },
+      "post": {
+        "operationId": "syncNow",
+        "tags": [
+          "File"
+        ],
+        "summary": "Bring the server in step with the file now",
+        "description": "Also happens after every change of the file and every five minutes.\n\nNeeds the admin role.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "admin"
+      }
+    },
+    "/api/v1/conversations": {
+      "get": {
+        "operationId": "conversations",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Channels and direct messages the person is in, with unread counts",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Conversations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/conversations/direct": {
+      "post": {
+        "operationId": "openDirect",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Open a direct conversation",
+        "description": "The existing one with the same person, or a new one; the others are invited.\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "people"
+                ],
+                "properties": {
+                  "people": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Opened"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      }
+    },
+    "/api/v1/conversations/{id}": {
+      "get": {
+        "operationId": "conversation",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "A conversation: topic, members, retention, guests and pinned messages",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The conversation's Matrix room id, such as !abc:example.com.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/conversations/{id}/messages": {
+      "get": {
+        "operationId": "messages",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "A page of messages, oldest first",
+        "description": "Thread replies are counted on the thread's first message; edits and reactions are folded in.\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The conversation's Matrix room id, such as !abc:example.com.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "The before value of the previous page, for older messages.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagePage"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      },
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Send a message, a file or a reply in a thread",
+        "description": "@ and a member's name mentions them; @here mentions everyone in the channel.\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The conversation's Matrix room id, such as !abc:example.com.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "$ref": "#/components/schemas/FileRef",
+                    "description": "From POST /api/v1/files."
+                  },
+                  "threadRoot": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The thread's first message, to reply in it."
+                  },
+                  "alsoInChannel": {
+                    "type": "boolean",
+                    "description": "A reply in a thread is also sent to the channel."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      }
+    },
+    "/api/v1/conversations/{id}/threads/{event}": {
+      "get": {
+        "operationId": "thread",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "A thread: its first message and the replies",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The conversation's Matrix room id, such as !abc:example.com.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "required": true,
+            "description": "The message's Matrix event id, such as $abc.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Thread"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/conversations/{id}/messages/{event}/reactions": {
+      "post": {
+        "operationId": "react",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Add a reaction, or take yours back",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The conversation's Matrix room id, such as !abc:example.com.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "required": true,
+            "description": "The message's Matrix event id, such as $abc.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "emoji"
+                ],
+                "properties": {
+                  "emoji": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reactions"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/conversations/{id}/read": {
+      "post": {
+        "operationId": "markRead",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Mark the conversation read up to a message",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The conversation's Matrix room id, such as !abc:example.com.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "eventId"
+                ],
+                "properties": {
+                  "eventId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Marked."
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/conversations/{id}/join": {
+      "post": {
+        "operationId": "join",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Join a channel open to the company, or accept an invitation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The conversation's Matrix room id, such as !abc:example.com.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Joined."
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/conversations/{id}/leave": {
+      "post": {
+        "operationId": "leave",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Leave a conversation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The conversation's Matrix room id, such as !abc:example.com.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Left."
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/wait": {
+      "get": {
+        "operationId": "wait",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Wait for anything new",
+        "description": "Without since it answers at once with the place to start; with it, it waits up to 25 seconds and names the conversations that changed.\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "The since value of the previous answer.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wait"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      }
+    },
+    "/api/v1/files": {
+      "post": {
+        "operationId": "upload",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Upload a file to attach to a message",
+        "description": "The body is the file; Content-Type its type and X-File-Name its name. It is kept on the Matrix server.\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileRef"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      }
+    },
+    "/api/v1/files/{server}/{media}": {
+      "get": {
+        "operationId": "download",
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Download a file of a message",
+        "parameters": [
+          {
+            "name": "server",
+            "in": "path",
+            "required": true,
+            "description": "The server part of the mxc:// address.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "media",
+            "in": "path",
+            "required": true,
+            "description": "The media id of the mxc:// address.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "The name to save it as.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The file.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/gif": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "operationId": "search",
+        "tags": [
+          "Search"
+        ],
+        "summary": "Messages and files the person may see",
+        "description": "Channels open to the company, even ones the person has not joined, and the private channels and direct messages they are in. q takes from:name, in:#channel, has:file, before:YYYY-MM-DD, after:YYYY-MM-DD and \"exact words\".\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "What to look for.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "in",
+            "in": "query",
+            "required": false,
+            "description": "A conversation's id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "A sender's Matrix user id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "description": "Only the last this many days.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResults"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      }
+    },
+    "/api/v1/people": {
+      "get": {
+        "operationId": "people",
+        "tags": [
+          "People"
+        ],
+        "summary": "Members and guests, with presence, local time and groups",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/People"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/directory": {
+      "get": {
+        "operationId": "browse",
+        "tags": [
+          "Channels"
+        ],
+        "summary": "Channels open to the company, to join",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Directory"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "description": "As the signed-in person, on their own Matrix account; API tokens are refused."
+      }
+    },
+    "/api/v1/channels": {
+      "get": {
+        "operationId": "channels",
+        "tags": [
+          "Channels"
+        ],
+        "summary": "Every channel with where its members come from, its retention, holds and guests",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Channels"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "viewer",
+        "description": "Needs the viewer role."
+      },
+      "post": {
+        "operationId": "createChannel",
+        "tags": [
+          "Channels"
+        ],
+        "summary": "Make a channel",
+        "description": "A signed-in person makes one for themselves. A product such as Incidents makes one with an API token that has the editor role, with its members, a reference and kind incident.",
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "examples": [
+                      "inc-2041-api-latency"
+                    ]
+                  },
+                  "topic": {
+                    "type": "string"
+                  },
+                  "private": {
+                    "type": "boolean"
+                  },
+                  "members": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "incident"
+                    ]
+                  },
+                  "reference": {
+                    "type": "string",
+                    "examples": [
+                      "INC-2041"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewChannel"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        }
+      }
+    },
+    "/api/v1/channels/{id}": {
+      "patch": {
+        "operationId": "updateChannel",
+        "tags": [
+          "Channels"
+        ],
+        "summary": "Retention, who posts and guests of a channel people or a product made",
+        "description": "The file's channels change in the file: they answer 409.\n\nNeeds the admin role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The channel's Matrix room id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [],
+                "properties": {
+                  "retention": {
+                    "type": "string",
+                    "description": "30d, 12w, 6m, 2y or forever.",
+                    "examples": [
+                      "1y",
+                      "90d",
+                      "forever"
+                    ]
+                  },
+                  "posts": {
+                    "type": "string",
+                    "enum": [
+                      "everyone",
+                      "admins"
+                    ]
+                  },
+                  "guests": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminChannel"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "admin"
+      }
+    },
+    "/api/v1/guests": {
+      "post": {
+        "operationId": "inviteGuest",
+        "tags": [
+          "People"
+        ],
+        "summary": "Invite a guest to a channel that takes guests",
+        "description": "The guest gets a Matrix account that sees only that channel, until the day it ends, and a welcome link to choose a password.\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "name",
+                  "channel"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "company": {
+                    "type": "string"
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "days": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuestInvited"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      }
+    },
+    "/api/v1/guests/{id}": {
+      "delete": {
+        "operationId": "endGuest",
+        "tags": [
+          "People"
+        ],
+        "summary": "End a guest's access",
+        "description": "Who invited them, or an admin.\n\nAs the signed-in person, on their own Matrix account; API tokens are refused.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The guest's id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Ended."
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "x-openasy-role": "user"
+      }
+    },
+    "/api/v1/welcome/{token}": {
+      "get": {
+        "operationId": "welcome",
+        "tags": [
+          "People"
+        ],
+        "summary": "A guest's welcome link",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "From the link.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Welcome"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "operationId": "acceptWelcome",
+        "tags": [
+          "People"
+        ],
+        "summary": "The guest chooses a password for Element",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "From the link.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Welcomed"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/v1/exports": {
+      "get": {
+        "operationId": "exports",
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Exports for legal requests and legal holds",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Exports"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "admin",
+        "description": "Needs the admin role."
+      },
+      "post": {
+        "operationId": "startExport",
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Export a channel for a legal request",
+        "description": "Every message, edit, reaction and file in the range, as a ZIP with a manifest signed with Ed25519. With hold, nothing in the channel is deleted until the hold is released. Recorded in the audit log.\n\nNeeds the admin role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reference",
+                  "channel",
+                  "from",
+                  "to"
+                ],
+                "properties": {
+                  "reference": {
+                    "type": "string"
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "from": {
+                    "type": "string",
+                    "format": "date",
+                    "examples": [
+                      "2026-10-31"
+                    ]
+                  },
+                  "to": {
+                    "type": "string",
+                    "format": "date",
+                    "examples": [
+                      "2026-10-31"
+                    ]
+                  },
+                  "senders": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "hold": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Export"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "admin"
+      }
+    },
+    "/api/v1/exports/key": {
+      "get": {
+        "operationId": "exportKey",
+        "tags": [
+          "Legal"
+        ],
+        "summary": "The public key export manifests are signed with",
+        "responses": {
+          "200": {
+            "description": "PEM.",
+            "content": {
+              "application/x-pem-file": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "viewer",
+        "description": "Needs the viewer role."
+      }
+    },
+    "/api/v1/exports/{id}": {
+      "get": {
+        "operationId": "export",
+        "tags": [
+          "Legal"
+        ],
+        "summary": "An export",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The export's id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Export"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "admin",
+        "description": "Needs the admin role."
+      }
+    },
+    "/api/v1/exports/{id}/archive": {
+      "get": {
+        "operationId": "exportArchive",
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Download an export",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The export's id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ZIP.",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "admin",
+        "description": "Needs the admin role."
+      }
+    },
+    "/api/v1/holds/{id}/release": {
+      "post": {
+        "operationId": "releaseHold",
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Release a legal hold",
+        "description": "The channel's retention applies again.\n\nNeeds the admin role.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The hold's id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hold"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "admin"
+      }
+    },
+    "/api/v1/integrations": {
+      "get": {
+        "operationId": "integrations",
+        "tags": [
+          "Apps"
+        ],
+        "summary": "The Matrix server, Identity and the apps of the file",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Integrations"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "viewer",
+        "description": "Needs the viewer role."
+      }
+    },
+    "/api/v1/apps/{name}/hook": {
+      "post": {
+        "operationId": "makeHook",
+        "tags": [
+          "Apps"
+        ],
+        "summary": "Make an app's webhook address",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "The app's name in the file, such as Alerts.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hook"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "apiToken": []
+          },
+          {
+            "adminToken": []
+          }
+        ],
+        "x-openasy-role": "admin",
+        "description": "Needs the admin role."
+      }
+    },
+    "/hooks/{token}": {
+      "post": {
+        "operationId": "postHook",
+        "tags": [
+          "Apps"
+        ],
+        "summary": "An app posts a message",
+        "description": "The address is the key. Element shows the text; the pages also draw the card.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "From the webhook address.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "channel": {
+                    "type": "string",
+                    "examples": [
+                      "ops-oncall"
+                    ]
+                  },
+                  "card": {
+                    "$ref": "#/components/schemas/Card"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Posted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Posted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "security": []
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "healthz",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Alive",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/readyz": {
+      "get": {
+        "operationId": "readyz",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Ready",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "metrics",
+        "tags": [
+          "Product"
+        ],
+        "summary": "Prometheus metrics",
+        "responses": {
+          "200": {
+            "description": "Metrics.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "openasy_session"
+      },
+      "apiToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An API token made under Settings, API tokens."
+      },
+      "adminToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Tests only."
+      }
+    },
+    "responses": {
+      "Problem": {
+        "description": "A problem (RFC 9457).",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Problem": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable; match on this.",
+            "enum": [
+              "invalid-token",
+              "invalid-json",
+              "invalid-body",
+              "forbidden",
+              "not-found",
+              "conflict",
+              "encrypted",
+              "matrix-unavailable",
+              "payload-too-large",
+              "internal-error",
+              "unauthenticated",
+              "invalid-credentials",
+              "mfa-required",
+              "mfa-setup-required",
+              "cross-site",
+              "rate-limited"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "Status": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "Version": {
+        "type": "object",
+        "required": [
+          "product",
+          "version"
+        ],
+        "properties": {
+          "product": {
+            "const": "chat"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "Products": {
+        "type": "object",
+        "required": [
+          "products"
+        ],
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "url"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Me": {
+        "type": "object",
+        "required": [
+          "userId",
+          "email",
+          "name",
+          "role",
+          "homeserver",
+          "serverName"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "viewer",
+              "editor",
+              "admin",
+              "owner"
+            ]
+          },
+          "homeserver": {
+            "type": "string",
+            "description": "Where Element and other Matrix apps reach the server."
+          },
+          "serverName": {
+            "type": "string"
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "required": [
+          "channels",
+          "apps",
+          "file",
+          "sync",
+          "homeserver"
+        ],
+        "properties": {
+          "channels": {
+            "type": "integer"
+          },
+          "apps": {
+            "type": "integer"
+          },
+          "file": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sync": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "homeserver": {
+            "type": "string"
+          }
+        }
+      },
+      "FileState": {
+        "type": "object",
+        "required": [
+          "path",
+          "appliedAt",
+          "channels",
+          "apps",
+          "error",
+          "text"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "appliedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "channels": {
+            "type": "integer"
+          },
+          "apps": {
+            "type": "integer"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "SyncResult": {
+        "type": "object",
+        "required": [
+          "at",
+          "ok",
+          "created",
+          "updated",
+          "removed",
+          "released",
+          "warnings",
+          "error"
+        ],
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "created": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "updated": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "released": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "SyncRuns": {
+        "type": "object",
+        "required": [
+          "last",
+          "runs"
+        ],
+        "properties": {
+          "last": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "runs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "at",
+                "ok",
+                "created",
+                "updated",
+                "released",
+                "warnings",
+                "error"
+              ],
+              "properties": {
+                "at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "ok": {
+                  "type": "boolean"
+                },
+                "created": {
+                  "type": "integer"
+                },
+                "updated": {
+                  "type": "integer"
+                },
+                "released": {
+                  "type": "integer"
+                },
+                "warnings": {
+                  "type": "integer"
+                },
+                "error": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "Config": {
+        "type": "object",
+        "required": [
+          "channels",
+          "apps",
+          "defaults",
+          "guests",
+          "file"
+        ],
+        "properties": {
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "topic",
+                "private",
+                "members",
+                "admins",
+                "retention",
+                "guests",
+                "posts"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "topic": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "private": {
+                  "type": "boolean"
+                },
+                "members": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "admins": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "retention": {
+                  "type": "string",
+                  "description": "30d, 12w, 6m, 2y or forever.",
+                  "examples": [
+                    "1y",
+                    "90d",
+                    "forever"
+                  ]
+                },
+                "guests": {
+                  "type": "boolean"
+                },
+                "posts": {
+                  "type": "string",
+                  "enum": [
+                    "everyone",
+                    "admins"
+                  ]
+                }
+              }
+            }
+          },
+          "apps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "channels"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "channels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "defaults": {
+            "type": "object",
+            "required": [
+              "retention"
+            ],
+            "properties": {
+              "retention": {
+                "type": "string",
+                "description": "30d, 12w, 6m, 2y or forever.",
+                "examples": [
+                  "1y",
+                  "90d",
+                  "forever"
+                ]
+              }
+            }
+          },
+          "guests": {
+            "type": "object",
+            "required": [
+              "days"
+            ],
+            "properties": {
+              "days": {
+                "type": "integer"
+              }
+            }
+          },
+          "file": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Sender": {
+        "type": "object",
+        "required": [
+          "userId",
+          "name",
+          "app",
+          "guest"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "examples": [
+              "@ben:example.com"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "app": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The app's name when an app of the file posted it."
+          },
+          "guest": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FileRef": {
+        "type": "object",
+        "required": [
+          "uri",
+          "name",
+          "size",
+          "type"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "examples": [
+              "mxc://example.com/abc"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Card": {
+        "type": "object",
+        "required": [
+          "title",
+          "severity",
+          "status",
+          "fields",
+          "link"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "info"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "label",
+                  "tone"
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "tone": {
+                    "type": "string",
+                    "enum": [
+                      "success",
+                      "warning",
+                      "danger",
+                      "info",
+                      "neutral"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "label",
+                  "url"
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Reaction": {
+        "type": "object",
+        "required": [
+          "emoji",
+          "count",
+          "mine",
+          "by"
+        ],
+        "properties": {
+          "emoji": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "mine": {
+            "type": "boolean"
+          },
+          "by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "required": [
+          "id",
+          "sender",
+          "ts",
+          "text",
+          "edited",
+          "deleted",
+          "encrypted",
+          "file",
+          "card",
+          "reactions",
+          "thread",
+          "threadRoot",
+          "mentionsMe"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/Sender"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "text": {
+            "type": "string"
+          },
+          "edited": {
+            "type": "boolean"
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "encrypted": {
+            "type": "boolean",
+            "description": "End-to-end encrypted: only the people's own Matrix apps read it."
+          },
+          "file": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "card": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Card"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reaction"
+            }
+          },
+          "thread": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "count",
+                  "lastTs",
+                  "participants"
+                ],
+                "properties": {
+                  "count": {
+                    "type": "integer"
+                  },
+                  "lastTs": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "participants": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Sender"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "threadRoot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mentionsMe": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Conversation": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "topic",
+          "members",
+          "unread",
+          "mentions",
+          "encrypted",
+          "guestsAllowed",
+          "with",
+          "lastTs",
+          "invited"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "guests",
+              "incident",
+              "dm"
+            ]
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "type": "integer"
+          },
+          "unread": {
+            "type": "integer"
+          },
+          "mentions": {
+            "type": "integer"
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "guestsAllowed": {
+            "type": "boolean",
+            "description": "Guests from outside the company may be invited to it."
+          },
+          "with": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sender"
+            }
+          },
+          "lastTs": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "invited": {
+            "type": "boolean",
+            "description": "Invited and not joined yet; opening it joins."
+          }
+        }
+      },
+      "Conversations": {
+        "type": "object",
+        "required": [
+          "userId",
+          "conversations"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "conversations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Conversation"
+            }
+          }
+        }
+      },
+      "ConversationDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "alias",
+          "kind",
+          "topic",
+          "members",
+          "someMembers",
+          "with",
+          "from",
+          "managedBy",
+          "reference",
+          "retention",
+          "hold",
+          "guestsAllowed",
+          "guests",
+          "encrypted",
+          "canPost",
+          "pinned"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "alias": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "guests",
+              "incident",
+              "dm"
+            ]
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "type": "integer"
+          },
+          "someMembers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sender"
+            }
+          },
+          "with": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sender"
+            }
+          },
+          "from": {
+            "type": "string",
+            "description": "Where the members come from, as the file names them."
+          },
+          "managedBy": {
+            "type": "string",
+            "enum": [
+              "file",
+              "people",
+              "api"
+            ]
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "retention": {
+            "type": "string",
+            "description": "30d, 12w, 6m, 2y or forever.",
+            "examples": [
+              "1y",
+              "90d",
+              "forever"
+            ]
+          },
+          "hold": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A legal hold's reference: nothing is deleted while it is on."
+          },
+          "guestsAllowed": {
+            "type": "boolean"
+          },
+          "guests": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "company",
+                "endsAt",
+                "invitedBy"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "company": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "endsAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "invitedBy": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "canPost": {
+            "type": "boolean"
+          },
+          "pinned": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          }
+        }
+      },
+      "MessagePage": {
+        "type": "object",
+        "required": [
+          "messages",
+          "before"
+        ],
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          },
+          "before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pass as before= for the page of older messages."
+          }
+        }
+      },
+      "Thread": {
+        "type": "object",
+        "required": [
+          "root",
+          "replies"
+        ],
+        "properties": {
+          "root": {
+            "$ref": "#/components/schemas/Message"
+          },
+          "replies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          }
+        }
+      },
+      "Reactions": {
+        "type": "object",
+        "required": [
+          "reactions"
+        ],
+        "properties": {
+          "reactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reaction"
+            }
+          }
+        }
+      },
+      "Wait": {
+        "type": "object",
+        "required": [
+          "since",
+          "changed"
+        ],
+        "properties": {
+          "since": {
+            "type": "string"
+          },
+          "changed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Opened": {
+        "type": "object",
+        "required": [
+          "id",
+          "created"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "created": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NewChannel": {
+        "type": "object",
+        "required": [
+          "id",
+          "alias"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "alias": {
+            "type": "string"
+          }
+        }
+      },
+      "Directory": {
+        "type": "object",
+        "required": [
+          "channels"
+        ],
+        "properties": {
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "topic",
+                "members",
+                "joined"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "topic": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "members": {
+                  "type": "integer"
+                },
+                "joined": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchResults": {
+        "type": "object",
+        "required": [
+          "messages",
+          "files",
+          "count"
+        ],
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Message"
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "room"
+                  ],
+                  "properties": {
+                    "room": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name",
+                        "kind"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "private",
+                            "guests",
+                            "incident",
+                            "dm"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "file",
+                "room",
+                "sender",
+                "ts"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "file": {
+                  "$ref": "#/components/schemas/FileRef"
+                },
+                "room": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "kind"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "public",
+                        "private",
+                        "guests",
+                        "incident",
+                        "dm"
+                      ]
+                    }
+                  }
+                },
+                "sender": {
+                  "$ref": "#/components/schemas/Sender"
+                },
+                "ts": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "Person": {
+        "type": "object",
+        "required": [
+          "userId",
+          "name",
+          "email",
+          "presence",
+          "status",
+          "timeZone",
+          "groups",
+          "channels",
+          "guest",
+          "me"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "presence": {
+            "type": "string",
+            "enum": [
+              "online",
+              "away",
+              "busy",
+              "offline"
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timeZone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The IANA time zone the person shares in their Matrix profile (m.tz)."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "channels": {
+            "type": "integer"
+          },
+          "guest": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "id",
+                  "company",
+                  "channel",
+                  "roomId",
+                  "invitedBy",
+                  "endsAt",
+                  "welcomed"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "company": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "channel": {
+                    "type": "string"
+                  },
+                  "roomId": {
+                    "type": "string"
+                  },
+                  "invitedBy": {
+                    "type": "string"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "welcomed": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "me": {
+            "type": "boolean"
+          }
+        }
+      },
+      "People": {
+        "type": "object",
+        "required": [
+          "source",
+          "people",
+          "leaving"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "identity",
+              "matrix"
+            ]
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Person"
+            }
+          },
+          "leaving": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "email",
+                "channels"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "channels": {
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "Turned off in Identity, taken out at the next sync."
+          }
+        }
+      },
+      "GuestInvited": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "endsAt",
+          "link"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "link": {
+            "type": "string",
+            "description": "The welcome link; shown once."
+          }
+        }
+      },
+      "Welcome": {
+        "type": "object",
+        "required": [
+          "name",
+          "channel",
+          "userId",
+          "endsAt",
+          "homeserver"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "homeserver": {
+            "type": "string"
+          }
+        }
+      },
+      "Welcomed": {
+        "type": "object",
+        "required": [
+          "userId",
+          "homeserver"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "homeserver": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminChannel": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "alias",
+          "kind",
+          "topic",
+          "members",
+          "from",
+          "managedBy",
+          "by",
+          "reference",
+          "retention",
+          "hold",
+          "guests",
+          "guestCount",
+          "posts",
+          "encrypted",
+          "entry"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "alias": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "guests",
+              "incident"
+            ]
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "string"
+          },
+          "managedBy": {
+            "type": "string",
+            "enum": [
+              "file",
+              "people",
+              "api"
+            ]
+          },
+          "by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "For api: the API token's name, such as Incidents."
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "retention": {
+            "type": "string",
+            "description": "30d, 12w, 6m, 2y or forever.",
+            "examples": [
+              "1y",
+              "90d",
+              "forever"
+            ]
+          },
+          "hold": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "guests": {
+            "type": "boolean",
+            "description": "Guests may be invited."
+          },
+          "guestCount": {
+            "type": "integer"
+          },
+          "posts": {
+            "type": "string",
+            "enum": [
+              "everyone",
+              "admins"
+            ]
+          },
+          "encrypted": {
+            "type": "boolean"
+          },
+          "entry": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "name",
+                  "topic",
+                  "private",
+                  "members",
+                  "admins",
+                  "retention",
+                  "guests",
+                  "posts"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "topic": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "private": {
+                    "type": "boolean"
+                  },
+                  "members": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "admins": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "retention": {
+                    "type": "string",
+                    "description": "30d, 12w, 6m, 2y or forever.",
+                    "examples": [
+                      "1y",
+                      "90d",
+                      "forever"
+                    ]
+                  },
+                  "guests": {
+                    "type": "boolean"
+                  },
+                  "posts": {
+                    "type": "string",
+                    "enum": [
+                      "everyone",
+                      "admins"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The channel's entry in the chat file."
+          }
+        }
+      },
+      "Channels": {
+        "type": "object",
+        "required": [
+          "channels",
+          "totals"
+        ],
+        "properties": {
+          "channels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminChannel"
+            }
+          },
+          "totals": {
+            "type": "object",
+            "required": [
+              "channels",
+              "fromFile",
+              "private",
+              "withGuests",
+              "guests",
+              "files",
+              "messages"
+            ],
+            "properties": {
+              "channels": {
+                "type": "integer"
+              },
+              "fromFile": {
+                "type": "integer"
+              },
+              "private": {
+                "type": "integer"
+              },
+              "withGuests": {
+                "type": "integer"
+              },
+              "guests": {
+                "type": "integer"
+              },
+              "files": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Bytes of files on the server."
+              },
+              "messages": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Bytes of messages in the database; Synapse tells it only on PostgreSQL."
+              }
+            }
+          }
+        }
+      },
+      "Export": {
+        "type": "object",
+        "required": [
+          "id",
+          "reference",
+          "channel",
+          "roomId",
+          "from",
+          "to",
+          "senders",
+          "startedBy",
+          "startedAt",
+          "finishedAt",
+          "state",
+          "messages",
+          "files",
+          "bytes",
+          "sha256",
+          "error",
+          "hold"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string",
+            "format": "date",
+            "examples": [
+              "2026-10-31"
+            ]
+          },
+          "to": {
+            "type": "string",
+            "format": "date",
+            "examples": [
+              "2026-10-31"
+            ]
+          },
+          "senders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "startedBy": {
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "running",
+              "ready",
+              "failed"
+            ]
+          },
+          "messages": {
+            "type": "integer"
+          },
+          "files": {
+            "type": "integer"
+          },
+          "bytes": {
+            "type": "integer"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hold": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "id",
+                  "released"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "released": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Hold": {
+        "type": "object",
+        "required": [
+          "id",
+          "reference",
+          "channel",
+          "roomId",
+          "placedBy",
+          "placedAt",
+          "releasedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "roomId": {
+            "type": "string"
+          },
+          "placedBy": {
+            "type": "string"
+          },
+          "placedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "releasedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Exports": {
+        "type": "object",
+        "required": [
+          "exports",
+          "holds"
+        ],
+        "properties": {
+          "exports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Export"
+            }
+          },
+          "holds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hold"
+            }
+          }
+        }
+      },
+      "Integrations": {
+        "type": "object",
+        "required": [
+          "matrix",
+          "identity",
+          "apps"
+        ],
+        "properties": {
+          "matrix": {
+            "type": "object",
+            "required": [
+              "homeserver",
+              "serverName",
+              "version",
+              "ok",
+              "user"
+            ],
+            "properties": {
+              "homeserver": {
+                "type": "string"
+              },
+              "serverName": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "version": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "user": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "identity": {
+            "type": "object",
+            "required": [
+              "configured",
+              "ok",
+              "error",
+              "people",
+              "at"
+            ],
+            "properties": {
+              "configured": {
+                "type": "boolean"
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "error": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "people": {
+                "type": "integer"
+              },
+              "at": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "apps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "userId",
+                "channels",
+                "hook"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "userId": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "channels": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "hook": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "createdAt",
+                        "usedAt"
+                      ],
+                      "properties": {
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "usedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "Hook": {
+        "type": "object",
+        "required": [
+          "app",
+          "url"
+        ],
+        "properties": {
+          "app": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "The webhook address; shown once. Making a new one ends the old one."
+          }
+        }
+      },
+      "Posted": {
+        "type": "object",
+        "required": [
+          "eventId",
+          "channel"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

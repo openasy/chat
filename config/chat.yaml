@@ -1,0 +1,51 @@
+# The channels, apps and rules of this Chat. Chat keeps the Matrix server in step with this file: it is read again
+# within a minute of a save, applied whole or not at all, and a mistake leaves the last good version in place (see the
+# README). Channels people make for themselves need nothing here.
+#
+# A channel taken out of the file is not deleted: it is handed to its members.
+defaults:
+  # How long messages are kept in channels people make: 30d, 12w, 6m, 2y or forever.
+  retention: 1y
+guests:
+  # The longest a guest's access lasts, in days.
+  days: 90
+channels:
+  # Open to the company: everyone may read and join it; the groups listed are put in. Groups come from Identity.
+  - name: general
+    topic: Company-wide news and questions
+    members: [group:everyone]
+    retention: 2y
+  - name: announcements
+    topic: News from leadership
+    members: [group:everyone]
+    # Only the admins post; everyone reads.
+    posts: admins
+    admins: [ceo@example.com]
+    retention: forever
+  - name: ops-oncall
+    topic: Paging, alerts and deploys for production
+    members: [group:platform, group:operations]
+    retention: 1y
+  - name: deploys
+    topic: Every production deploy and rollback
+    members: [group:engineering]
+    retention: 90d
+  # Private: only its members see it, and anyone the file does not list is taken out.
+  - name: leadership
+    topic: Leadership team only
+    private: true
+    members: [group:leadership]
+    retention: 2y
+  # Guests from outside the company may be invited to it by its members.
+  - name: northwind-shared
+    topic: Working with Northwind on the support portal trial
+    private: true
+    members: [chris@example.com]
+    guests: true
+    retention: 1y
+apps:
+  # Each app posts as its own account, marked as an app, through a webhook address made under Integrations.
+  - name: Alerts
+    channels: [ops-oncall]
+  - name: Deploys
+    channels: [deploys]

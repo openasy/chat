@@ -1,0 +1,11 @@
+node_modules
+dist
+data
+coverage
+*.log
+.DS_Store
+openasy-kek
+synapse-postgres-password
+identity-token
+synapse-registration-secret
+synapse-oidc-secret
