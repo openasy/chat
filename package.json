@@ -1,6 +1,6 @@
 {
   "name": "@openasy/chat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "OpenAsy Chat: channels, threads, direct messages, files and search on the company's own Matrix server, with channels set in a file and sign-in through Identity, on Synapse.",
   "license": "AGPL-3.0-only",

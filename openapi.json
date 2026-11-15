@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "OpenAsy Chat",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Channels, threads, direct messages, files and search on the company's own Matrix server (Synapse), with channels set in chat.yaml and guests, retention, legal holds and exports. The messages stay on the Matrix server; a person's routes act as that person there. Every member talks; viewers read the channels and the file; admins also set the rules of channels people made, export for legal requests and manage members and tokens.",
     "license": {
       "name": "AGPL-3.0-only",
