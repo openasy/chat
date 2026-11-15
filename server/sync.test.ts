@@ -12,6 +12,8 @@ describe("bringing the Matrix server in step with the file", () => {
   it("makes an account for everyone in the directory, the company space, the channels and the apps", async () => {
     app = await startApp({ version: "0.0.0" });
     const { fake } = app;
+    // Synapse's message rate limit would stop a company's first sync halfway: the service account has none.
+    expect(fake.state.ratelimitOverrides.get("@openasy-chat:example.com")).toEqual({ messages_per_second: 0, burst_count: 0 });
     expect(fake.users.get("@emily:example.com")?.displayname).toBe("Emily Clark");
     expect(fake.users.get("@ben:example.com")?.threepids).toEqual([{ medium: "email", address: "ben@example.com" }]);
     const space = room("company");

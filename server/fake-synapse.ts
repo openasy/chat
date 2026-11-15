@@ -50,7 +50,7 @@ export function fakeSynapse() {
   const txns = new Map<string, string>();
   /** Every call, with who made it. */
   const calls: Array<{ as: string | null; method: string; path: string; body?: any }> = [];
-  const state = { down: false, sqlite: false };
+  const state = { down: false, sqlite: false, ratelimitOverrides: new Map<string, unknown>() };
 
   const fail = (status: number, errcode: string, message: string) => new Fail(status, errcode, message);
   const user = (id: string) => users.get(id);
@@ -443,6 +443,15 @@ export function fakeSynapse() {
 
   // ---------------------------------------------------------------- client API
 
+  on(
+    "POST",
+    "/_synapse/admin/v1/users/:id/override_ratelimit",
+    ({ params, body }) => {
+      state.ratelimitOverrides.set(params[0]!, body);
+      return body;
+    },
+    "admin",
+  );
   on("POST", "/_matrix/client/v3/createRoom", ({ me, body }) => ({ room_id: createRoom(me, body).id }));
   on("GET", "/_matrix/client/v3/directory/room/:alias", ({ params }) => {
     const id = aliases.get(params[0]!);

@@ -4,6 +4,8 @@
 #   openssl rand -hex 32 > openasy-kek                                    # the sign-in secrets key (ADR 0021)
 #   printf '%s' "$(openssl rand -hex 32)" > synapse-registration-secret   # Chat makes its Synapse account with it
 #   printf '%s' "$(openssl rand -hex 24)" > synapse-postgres-password
+#   printf 'database:\n  name: psycopg2\n  args: { user: synapse, password: "%s", database: synapse, host: postgres }\n' \
+#     "$(cat synapse-postgres-password)" > synapse-database.yaml   # Synapse reads no password from a file
 #   printf '%s' "<the client secret of Synapse in Identity>" > synapse-oidc-secret
 #   $EDITOR config/synapse/homeserver.yaml config/chat.yaml
 #   docker compose run --rm synapse generate-keys
@@ -28,12 +30,13 @@ services:
     image: ghcr.io/element-hq/synapse:v1.165.0
     restart: unless-stopped
     depends_on: [postgres]
-    # generate-keys makes Synapse's signing key once; otherwise Synapse runs as usual.
+    # generate-keys makes Synapse's signing key once, owned by Synapse's own user; otherwise Synapse runs with
+    # homeserver.yaml and, after it, the database settings with their password.
     entrypoint:
       [
         "/bin/sh",
         "-c",
-        'if [ "$$1" = generate-keys ]; then exec python -m synapse.app.homeserver --config-path /config/homeserver.yaml --generate-keys; fi; exec /start.py',
+        'if [ "$$1" = generate-keys ]; then python -m synapse.app.homeserver --config-path /config/homeserver.yaml --generate-keys && exec chown -R 991:991 /data; fi; exec /start.py run --config-path /config/homeserver.yaml --config-path /run/secrets/synapse-database.yaml',
         "--",
       ]
     ports:
@@ -43,13 +46,11 @@ services:
       - ./config/synapse:/config:ro
     secrets:
       - synapse-registration-secret
-      - synapse-postgres-password
+      - synapse-database.yaml
       - synapse-oidc-secret
-    environment:
-      SYNAPSE_CONFIG_PATH: /config/homeserver.yaml
 
   chat:
-    image: ghcr.io/openasy/chat:0.1.0
+    image: ghcr.io/openasy/chat:0.1.1
     restart: unless-stopped
     depends_on: [synapse]
     read_only: true
@@ -92,5 +93,7 @@ secrets:
     file: ./synapse-registration-secret
   synapse-postgres-password:
     file: ./synapse-postgres-password
+  synapse-database.yaml:
+    file: ./synapse-database.yaml
   synapse-oidc-secret:
     file: ./synapse-oidc-secret

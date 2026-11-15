@@ -148,6 +148,13 @@ export function createMatrix({ url, fetch: f = fetch, clock = Date.now }: Matrix
      * and uses its token. The password is derived from the secret, so nothing else needs keeping.
      */
     async signInService(sharedSecret: string, localpart: string): Promise<string> {
+      const user = await matrix.signInServiceAccount(sharedSecret, localpart);
+      // Keeping channels in step sends many state events at once: Synapse's message rate limit would stop the first
+      // sync of a company halfway, so the service account has none.
+      await request("POST", `/_synapse/admin/v1/users/${seg(user)}/override_ratelimit`, { token: svc(), body: { messages_per_second: 0, burst_count: 0 } });
+      return user;
+    },
+    async signInServiceAccount(sharedSecret: string, localpart: string): Promise<string> {
       const password = createHmac("sha256", sharedSecret).update(`openasy-chat:${localpart}`).digest("hex");
       try {
         const { nonce } = await request<{ nonce: string }>("GET", "/_synapse/admin/v1/register");

@@ -14,15 +14,8 @@ listeners:
     x_forwarded: true
     resources:
       - names: [client] # no federation listener: federation comes after Chat's first release
-database:
-  name: psycopg2
-  args:
-    user: synapse
-    password_file: /run/secrets/synapse-postgres-password
-    database: synapse
-    host: postgres
-    cp_min: 5
-    cp_max: 10
+# The database, with its password, is in synapse-database.yaml, which Synapse reads after this file: Synapse reads
+# no password from a file of its own.
 
 # Chat makes its own admin account with this secret, the first time it starts (CHAT_SYNAPSE_SECRET_FILE).
 registration_shared_secret_path: /run/secrets/synapse-registration-secret

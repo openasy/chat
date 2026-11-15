@@ -105,6 +105,8 @@ account at their first sign-in with their email's local part, the same account C
 openssl rand -hex 32 > openasy-kek
 printf '%s' "$(openssl rand -hex 32)" > synapse-registration-secret
 printf '%s' "$(openssl rand -hex 24)" > synapse-postgres-password
+printf 'database:\n  name: psycopg2\n  args: { user: synapse, password: "%s", database: synapse, host: postgres }\n' \
+  "$(cat synapse-postgres-password)" > synapse-database.yaml
 printf '%s' "<the client secret of Synapse in Identity>" > synapse-oidc-secret
 $EDITOR config/synapse/homeserver.yaml config/chat.yaml
 docker compose run --rm synapse generate-keys
@@ -112,8 +114,10 @@ docker compose up -d
 docker compose logs chat | grep 'no owner yet'
 ```
 
-At its first start Chat makes its own admin account on Synapse, `@openasy-chat:server`, with the registration shared
-secret, and signs in to it at every start after; nothing else needs keeping. Open the link from the log once to
+Synapse reads no password from a file, so its database settings, with the password, are a second settings file it
+reads after `homeserver.yaml`: `synapse-database.yaml`, kept beside the other secrets. At its first start Chat makes its own admin account on Synapse, `@openasy-chat:server`, with the registration shared
+secret, and signs in to it at every start after; nothing else needs keeping. It also lifts Synapse's message rate limit
+for that account, which would otherwise stop a company's first sync halfway. Open the link from the log once to
 create the owner account; there is no default password (ADR 0013). Chat is on http://localhost:8080 in
 `compose.yaml` and Synapse on 8008; put both behind TLS. Everyone in the company signs in to Chat with their identity
 provider and `OPENASY_OIDC_DEFAULT_ROLE=user`, or is invited as a member with the user role.
