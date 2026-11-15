@@ -874,14 +874,51 @@ export function MessagesPage({ ctx, roomId }: { ctx: Ctx; roomId: string | null 
     await loadRoom(active);
   };
 
+  // Browsing channels and starting a message work from the empty page too: a new member starts there.
+  const dialogs = (
+    <>
+      <BrowseDialog
+        ctx={ctx}
+        open={browse}
+        onOpenChange={setBrowse}
+        onJoined={(id) => {
+          setBrowse(false);
+          void loadList().then(() => open(id));
+        }}
+      />
+      <NewMessageDialog
+        ctx={ctx}
+        people={people}
+        open={newDm}
+        onOpenChange={setNewDm}
+        onOpened={(id) => {
+          setNewDm(false);
+          void loadList().then(() => open(id));
+        }}
+      />
+    </>
+  );
+
   if (list === undefined) return <PageHeader title={t("nav.messages")} description={t("loading")} />;
   if (!active)
     return (
       <>
         <PageHeader title={t("nav.messages")} />
-        <EmptyState icon={<MessageSquare />} title={t("channel.none")}>
+        <EmptyState
+          icon={<MessageSquare />}
+          title={t("channel.none")}
+          action={
+            <span className="flex flex-wrap justify-center gap-1.5">
+              <Button variant="primary" onClick={() => setBrowse(true)}>
+                {t("channel.browse")}
+              </Button>
+              <Button onClick={() => setNewDm(true)}>{t("channel.newMessage")}</Button>
+            </span>
+          }
+        >
           {t("channel.noneDetail")}
         </EmptyState>
+        {dialogs}
       </>
     );
 
@@ -1037,25 +1074,7 @@ export function MessagesPage({ ctx, roomId }: { ctx: Ctx; roomId: string | null 
           </section>
         )}
       </div>
-      <BrowseDialog
-        ctx={ctx}
-        open={browse}
-        onOpenChange={setBrowse}
-        onJoined={(id) => {
-          setBrowse(false);
-          void loadList().then(() => open(id));
-        }}
-      />
-      <NewMessageDialog
-        ctx={ctx}
-        people={people}
-        open={newDm}
-        onOpenChange={setNewDm}
-        onOpened={(id) => {
-          setNewDm(false);
-          void loadList().then(() => open(id));
-        }}
-      />
+      {dialogs}
     </>
   );
 }

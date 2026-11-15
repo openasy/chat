@@ -557,15 +557,31 @@ export function createChat(db: DatabaseSync, matrix: Matrix, opts: ChatOptions) 
   async function browse(email: string) {
     const me = await person(email);
     return server(async () => {
-      const r = await matrix.as<{ chunk: Array<{ room_id: string; name?: string; topic?: string; num_joined_members: number; canonical_alias?: string }> }>(
-        me,
-        "GET",
-        "/_matrix/client/v3/publicRooms",
-        { query: { limit: 500 } },
-      );
+      // Channels open to the company are restricted to the company space, and Synapse's room directory lists only rooms
+      // anyone may join: they are read from the space's rooms instead, as the service account, which is in every one.
+      type Room = {
+        room_id: string;
+        name?: string;
+        topic?: string;
+        num_joined_members: number;
+        canonical_alias?: string;
+        join_rule?: string;
+        room_type?: string;
+      };
+      const spaceId = await matrix.roomIdOf(`#${SPACE}:${matrix.serverName}`);
+      const rooms: Room[] = [];
+      for (let from: string | undefined, i = 0; spaceId && i < 20; i++) {
+        const page = await matrix.svc<{ rooms: Room[]; next_batch?: string }>("GET", `/_matrix/client/v1/rooms/${seg(spaceId)}/hierarchy`, {
+          query: { max_depth: 1, limit: 100, ...(from && { from }) },
+        });
+        rooms.push(...page.rooms);
+        if (!page.next_batch) break;
+        from = page.next_batch;
+      }
+      const open = rooms.filter((c) => c.room_id !== spaceId && c.room_type !== "m.space" && (c.join_rule === "restricted" || c.join_rule === "public"));
       const joined = new Set((await matrix.as<{ joined_rooms: string[] }>(me, "GET", "/_matrix/client/v3/joined_rooms")).joined_rooms);
       return {
-        channels: r.chunk
+        channels: open
           .map((c) => ({
             id: c.room_id,
             name: c.name ?? c.canonical_alias ?? c.room_id,

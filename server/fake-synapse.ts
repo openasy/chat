@@ -455,9 +455,28 @@ export function fakeSynapse() {
     roomOf(params[0]!).visibility = body.visibility;
     return {};
   });
+  // As Synapse does: the directory lists only rooms anyone may join, never restricted ones, even when published.
+  // A space's rooms, one level down (MSC2946), as the space's members see them.
+  on("GET", "/_matrix/client/v1/rooms/:id/hierarchy", ({ params }) => {
+    const space = roomOf(params[0]!);
+    const children = [...space.state.entries()]
+      .filter(([k, e]) => k.startsWith("m.space.child|") && e.content?.via)
+      .map(([k]) => rooms.get(k.slice("m.space.child|".length)))
+      .filter((r): r is NonNullable<typeof r> => !!r);
+    const out = (r: (typeof children)[number]) => ({
+      room_id: r.id,
+      name: r.state.get("m.room.name|")?.content.name,
+      topic: r.state.get("m.room.topic|")?.content.topic,
+      canonical_alias: r.state.get("m.room.canonical_alias|")?.content.alias,
+      num_joined_members: joined(r).length,
+      join_rule: r.state.get("m.room.join_rules|")?.content.join_rule,
+      room_type: r.state.get("m.room.create|")?.content.type,
+    });
+    return { rooms: [out(space), ...children.map(out)] };
+  });
   on("GET", "/_matrix/client/v3/publicRooms", () => ({
     chunk: [...rooms.values()]
-      .filter((r) => r.visibility === "public")
+      .filter((r) => r.visibility === "public" && ["public", "knock"].includes(r.state.get("m.room.join_rules|")?.content.join_rule))
       .map((r) => ({
         room_id: r.id,
         name: r.state.get("m.room.name|")?.content.name,
